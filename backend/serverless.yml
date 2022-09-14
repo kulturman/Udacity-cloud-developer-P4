@@ -1,15 +1,15 @@
-org: kulturman.bf
+org: kulturman
 app: serverless-todo-app
 service: serverless-todo-app
 
 plugins:
-  - serverless-webpack
+  - serverless-esbuild
   - serverless-iam-roles-per-function
   - serverless-plugin-tracing
 
 provider:
   name: aws
-  runtime: nodejs12.x
+  runtime: nodejs16.x
   lambdaHashingVersion: '20201221'
 
   stage: ${opt:stage, 'dev'}
@@ -22,7 +22,7 @@ provider:
   # Use these variables in the functions and resouorces section below. For example, 
   # ${self:provider.environment.ATTACHMENT_S3_BUCKET}
   environment:
-    TODOS_TABLE: Todos-${self:provider.stage}
+    TODOS_TABLE: Todos2-${self:provider.stage}
     TODOS_CREATED_AT_INDEX: CreatedAtIndex
     ATTACHMENT_S3_BUCKET: kulturman-1993-serverless-c4-todo-images-${self:provider.stage}
     SIGNED_URL_EXPIRATION: 300
@@ -57,7 +57,7 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - dynamodb:Scan
+          - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
   # TODO: Configure this function - 
@@ -114,7 +114,7 @@ functions:
     iamRoleStatements:
       - Effect: Allow
         Action:
-          - dynamodb:DelateItem
+          - dynamodb:DeleteItem
           - dynamodb:Query
         Resource: arn:aws:dynamodb:${self:provider.region}:*:table/${self:provider.environment.TODOS_TABLE}
 
@@ -135,6 +135,13 @@ resources:
     GatewayResponseDefault4XX:
       Type: AWS::ApiGateway::GatewayResponse
       Properties:
+        ResponseParameters:
+          gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+          gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+          gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS,POST'"
+        ResponseType: DEFAULT_4XX
+        RestApiId:
+          Ref: ApiGatewayRestApi
     
     # TODO: Create a DynamoDB table with local secondary index and a composite key
     TodosTable:
@@ -142,19 +149,23 @@ resources:
       Properties:
         TableName: ${self:provider.environment.TODOS_TABLE}
         AttributeDefinitions:
-          - AttributeName: id
+          - AttributeName: todoId
+            AttributeType: S
+          - AttributeName: userId
             AttributeType: S
           - AttributeName: createdAt
             AttributeType: S
         KeySchema:
-          - AttributeName: id
+          - AttributeName: userId
             KeyType: HASH
-          - AttributeName: createdAt
+          - AttributeName: todoId
             KeyType: RANGE
         BillingMode: PAY_PER_REQUEST
         LocalSecondaryIndexes:
           - IndexName: ${self:provider.environment.TODOS_CREATED_AT_INDEX}
             KeySchema:
+            - AttributeName: userId
+              KeyType: HASH
             - AttributeName: createdAt
               KeyType: RANGE
             Projection:

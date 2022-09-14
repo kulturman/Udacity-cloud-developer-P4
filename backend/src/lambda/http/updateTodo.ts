@@ -1,7 +1,7 @@
 import 'source-map-support/register'
 
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from 'aws-lambda'
-import * as middy from 'middy'
+import middy from '@middy/core';
 import { cors, httpErrorHandler } from 'middy/middlewares'
 
 import { updateTodo } from '../../businessLogic/todos'
@@ -16,6 +16,7 @@ export const handler = middy(
 
 
     return undefined
+  }
 )
 
 handler
