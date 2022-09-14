@@ -17,7 +17,7 @@ const s3 = new AWS.S3({
 })
 
 async function createTodo(todoItem: TodoItem) {
-    return await docClient.put({
+    await docClient.put({
         TableName: todosTable,
         Item: todoItem
     }).promise()

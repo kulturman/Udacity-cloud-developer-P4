@@ -14,7 +14,8 @@ async function createTodo(userId: string, newTodo: CreateTodoRequest) {
         attachmentUrl: '',
         createdAt: new Date().toDateString()
     };
-    return await dbAccessor.createTodo(todoItem);
+    await dbAccessor.createTodo(todoItem);
+    return todoItem;
 }
 
 function updateTodo() {
