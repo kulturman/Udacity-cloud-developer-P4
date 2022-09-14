@@ -1,47 +1,36 @@
 import * as AWS from "aws-sdk"
 import 'source-map-support/register'
-import * as uuid from 'uuid'
-import middy from '@middy/core';
-import { cors } from 'middy/middlewares'
 import { TodoItem } from "../models/TodoItem"
+import * as dbAccessor from '../helpers/todosAcess';
+import { CreateTodoRequest } from "../requests/CreateTodoRequest";
+import * as uuid from 'uuid';
 
-const todosTable = process.env.TODOS_TABLE
-const docClient = new AWS.DynamoDB.DocumentClient()
-
-const s3 = new AWS.S3({
-  signatureVersion: 'v4'
-})
-
-async function createTodo(todoItem: TodoItem) {
-    await docClient.put({
-        TableName: todosTable,
-        Item: todoItem
-    }).promise()
+async function createTodo(userId: string, newTodo: CreateTodoRequest) {
+    const todoItem: TodoItem = {
+        ...newTodo,
+        userId,
+        done: false,
+        todoId: uuid.v4(),
+        attachmentUrl: '',
+        createdAt: new Date().toDateString()
+    };
+    return await dbAccessor.createTodo(todoItem);
 }
 
 function updateTodo() {
 
 }
 
-function deleteTodo() {
-
+async function deleteTodo(userId: string, todoId: string) {
+    await dbAccessor.deleteTodo(userId, todoId);
 }
 
-function getTodo() {
-
+async function getTodo(userId: string, todoId: string) {
+    return await dbAccessor.getTodo(userId, todoId);
 }
 
 async function getTodosForUser(userId: string) {
-    const result = await docClient
-      .query({
-        TableName: todosTable,
-        KeyConditionExpression: 'userId = :userId',
-        ExpressionAttributeValues: {
-          ':userId': userId
-        }
-      })
-      .promise();
-    return result.Items;
+    return dbAccessor.getTodosForUser(userId);
 }
 
 export {
