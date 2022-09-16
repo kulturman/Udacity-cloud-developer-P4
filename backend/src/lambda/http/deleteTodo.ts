@@ -6,6 +6,7 @@ import httpErrorHandler from '@middy/http-error-handler'
 import cors from '@middy/http-cors'
 import { deleteTodo, getTodo } from '../../businessLogic/todos'
 import { getUserId } from '../utils'
+import { deleteImage } from '../../helpers/attachmentUtils';
 
 export const handler = middy(
   async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
@@ -21,6 +22,7 @@ export const handler = middy(
     }
     
     await deleteTodo(userId, todoId);
+    await deleteImage(todoId);
 
     return {
       statusCode: 200,

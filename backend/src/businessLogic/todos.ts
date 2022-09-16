@@ -1,9 +1,9 @@
-import * as AWS from "aws-sdk"
 import 'source-map-support/register'
 import { TodoItem } from "../models/TodoItem"
 import * as dbAccessor from '../helpers/todosAcess';
 import { CreateTodoRequest } from "../requests/CreateTodoRequest";
 import * as uuid from 'uuid';
+import { UpdateTodoRequest } from "../requests/UpdateTodoRequest";
 
 async function createTodo(userId: string, newTodo: CreateTodoRequest) {
     const todoItem: TodoItem = {
@@ -18,8 +18,8 @@ async function createTodo(userId: string, newTodo: CreateTodoRequest) {
     return todoItem;
 }
 
-function updateTodo() {
-
+async function updateTodo(userId: string, todoId: string, updatedTodo: UpdateTodoRequest) {
+    await dbAccessor.updateTodo(userId, todoId, updatedTodo);
 }
 
 async function deleteTodo(userId: string, todoId: string) {
